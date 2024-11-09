@@ -88,8 +88,7 @@ namespace PDFGenPOCApp
                                     Width = 400,
                                     Height = 500
                                 };
-
-
+                                
                             }
                             document.EndPage();
                             document.Close();
