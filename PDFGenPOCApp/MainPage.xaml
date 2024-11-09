@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:draw="http://schemas.appomobi.com/drawnUi/2023/draw"
+    x:Class="PDFGenPOCApp.MainPage">
+
+    <Grid RowDefinitions="Auto, Auto">
+        <draw:Canvas                
+            Grid.Row="0"
+        HorizontalOptions="FillAndExpand">
+            <draw:SkiaLayout
+            Padding="6"
+            BackgroundColor="Blue"
+            HorizontalOptions="Fill"
+            Tag="VStack"
+            Type="Row"
+            UseCache="ImageComposite">
+                <draw:SkiaMarkdownLabel
+                Text="بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ"
+                TextColor="Black"
+                FontSize="46"
+                BackgroundColor="Beige"
+                FlowDirection="RightToLeft"
+                HorizontalOptions="FillAndExpand"
+                HorizontalTextAlignment="End"
+                FontFamily="PDMS-Saleem"
+                Padding="20" />
+            </draw:SkiaLayout>
+        </draw:Canvas>
+        <Button
+            Clicked="Button_Clicked"
+            Grid.Row="1"
+            Margin="0,16"
+            HorizontalOptions="Center"
+            Text="Create Pdf A4"
+        />
+    </Grid>
+
+</ContentPage>
