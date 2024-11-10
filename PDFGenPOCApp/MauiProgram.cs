@@ -1,4 +1,4 @@
-﻿using DrawnUi.Maui.Draw;
+﻿global using DrawnUi.Maui.Draw;
 using Microsoft.Extensions.Logging;
 
 namespace PDFGenPOCApp

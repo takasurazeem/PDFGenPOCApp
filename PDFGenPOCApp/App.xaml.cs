@@ -1,4 +1,5 @@
-﻿namespace PDFGenPOCApp
+﻿
+namespace PDFGenPOCApp
 {
     public partial class App : Application
     {

@@ -49,78 +49,93 @@ namespace PDFGenPOCApp
             var vendor = "DrawnUI";
             var filename = GenerateFileName(DateTime.Now, "pdf");
 
+            var layout = new ReportSample()
+            {
+                BindingContext = this //whatever you want, you can have bindings inside your report
+            };
+
             //render and share
             Files.CheckPermissionsAsync(async () =>
-            {
+             {
 
-                try
-                {
-                    _lockLogs = true;
-                    string fullFilename = null;
-                    var subfolder = "Pdf";
-                    var scale = 1; //do not change this
-                    var destination = new SKRect(0, 0, width, float.PositiveInfinity);
-                   
-                    //we need a local file to ba saved in order to share it
-                    fullFilename = Files.GetFullFilename(filename, StorageType.Cache, subfolder);
+                 try
+                 {
+                     _lockLogs = true;
+                     string fullFilename = null;
+                     var subfolder = "Pdf";
+                     var scale = 1; //do not change this
+                     var destination = new SKRect(0, 0, width, float.PositiveInfinity);
+                     var measured = layout.Measure(destination.Width, destination.Height, scale);
 
-                    if (File.Exists(fullFilename))
-                    {
-                        File.Delete(fullFilename);
-                    }
+                     //prepare DrawingRect
+                     layout.Arrange(new SKRect(0, 0, layout.MeasuredSize.Pixels.Width, layout.MeasuredSize.Pixels.Height),
+                         layout.MeasuredSize.Pixels.Width, layout.MeasuredSize.Pixels.Height, scale);
 
-                  
-                    using (var ms = new MemoryStream())
-                    using (var stream = new SKManagedWStream(ms))
-                    {
-                        using (var document = SKDocument.CreatePdf(stream, new SKDocumentPdfMetadata
-                        {
-                            Author = vendor,
-                            Producer = vendor,
-                            Subject = this.Title
-                        }))
-                        {
-                            using (var canvas = document.BeginPage(400, 500))
-                            {
-                                var ctx = new SkiaDrawingContext()
-                                {
-                                    Canvas = canvas,
-                                    Width = 400,
-                                    Height = 500
-                                };
-                                
-                            }
-                            document.EndPage();
-                            document.Close();
-                        }
+                     var reportSize = new SKSize(measured.Units.Width, measured.Units.Height);
 
-                        ms.Position = 0;
-                        var content = ms.ToArray();
+                     //we need a local file to ba saved in order to share it
+                     fullFilename = Files.GetFullFilename(filename, StorageType.Cache, subfolder);
 
-                        var file = Files.OpenFile(fullFilename, StorageType.Cache, subfolder);
+                     if (File.Exists(fullFilename))
+                     {
+                         File.Delete(fullFilename);
+                     }
 
-                        // Write the bytes to the FileStream of the FileDescriptor
-                        await file.Handler.WriteAsync(content, 0, content.Length);
+                     var area = new SKRect(layout.DrawingRect.Left, layout.DrawingRect.Top, reportSize.Width, reportSize.Height);
 
-                        // Ensure all bytes are written to the underlying device
-                        await file.Handler.FlushAsync();
+                     using (var ms = new MemoryStream())
+                     using (var stream = new SKManagedWStream(ms))
+                     {
+                         using (var document = SKDocument.CreatePdf(stream, new SKDocumentPdfMetadata
+                         {
+                             Author = vendor,
+                             Producer = vendor,
+                             Subject = this.Title
+                         }))
+                         {
+                             using (var canvas = document.BeginPage(reportSize.Width, reportSize.Height))
+                             {
+                                 var ctx = new SkiaDrawingContext()
+                                 {
+                                     Canvas = canvas,
+                                     Width = reportSize.Width,
+                                     Height = reportSize.Height
+                                 };
 
-                        Files.CloseFile(file, true);
-                        await Task.Delay(500);
-                    }
+                                 //with no async stuff this is enough for most cases
+                                 layout.Render(ctx, new SKRect(0, 0, reportSize.Width, reportSize.Height), scale);
+                             }
+                             document.EndPage();
+                             document.Close();
+                         }
 
-                    //can share the file now
-                    Files.Share("PDF", new string[] { fullFilename });
-                }
-                catch (Exception e)
-                {
-                    Super.Log(e);
-                }
-                finally
-                {
-                    _lockLogs = false;
-                }
-            });
+                         ms.Position = 0;
+                         var content = ms.ToArray();
+
+                         var file = Files.OpenFile(fullFilename, StorageType.Cache, subfolder);
+
+                         // Write the bytes to the FileStream of the FileDescriptor
+                         await file.Handler.WriteAsync(content, 0, content.Length);
+
+                         // Ensure all bytes are written to the underlying device
+                         await file.Handler.FlushAsync();
+
+                         Files.CloseFile(file, true);
+                         await Task.Delay(500);
+                     }
+
+                     //can share the file now
+                     Files.Share("PDF", new string[] { fullFilename });
+                 }
+                 catch (Exception e)
+                 {
+                     Super.Log(e);
+                 }
+                 finally
+                 {
+                     _lockLogs = false;
+                 }
+             });
         }
 
         private async void Button_Clicked(object sender, EventArgs e)
